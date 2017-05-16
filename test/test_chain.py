@@ -50,3 +50,28 @@ def test_chain_is_valid ():
 
   assert_equals (4, len (c.chain))
   assert_true (c.is_valid_chain ())
+
+def test_chain_replace_chain ():
+  A = Chain ()
+  A.add_block (A.create_block ("block 2"))
+  B = Chain ()
+  B.add_block (B.create_block ("block 2"))
+  B.add_block (B.create_block ("block 3"))
+  assert_true (A.replace_chain (B))
+
+def test_chain_replace_chain_fails_on_len ():
+  A = Chain ()
+  A.add_block (A.create_block ("block 2"))
+  A.add_block (A.create_block ("block 3"))
+  B = Chain ()
+  B.add_block (B.create_block ("block 2"))
+  assert_false (A.replace_chain (B))
+
+def test_chain_replace_chain_fails_on_equal ():
+  A = Chain ()
+  A.add_block (A.create_block ("block 2"))
+  A.add_block (A.create_block ("block 3"))
+  B = Chain ()
+  B.add_block (B.create_block ("block 2"))
+  B.add_block (B.create_block ("block 3"))
+  assert_false (A.replace_chain (B))

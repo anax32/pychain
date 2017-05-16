@@ -44,3 +44,13 @@ class Chain:
         return False
 
     return True
+
+  def replace_chain (self, other):
+    if other.is_valid_chain () == False:
+      return False
+
+    if len (other.chain) <= len (self.chain):
+      return False
+
+    self.chain = other.chain
+    return True
