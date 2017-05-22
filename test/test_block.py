@@ -15,5 +15,5 @@ def test_block_to_string ():
   assert_equals ("1 4660 10 abcd", str (b))
 
 def test_block_generate_hash ():
-  h = Block.hash ("deadbeef".encode ("utf-8"))
+  h = Block.hash ("deadbeef")
   assert_equals ("2baf1f40105d9501fe319a8ec463fdf4325a2a5df445adf3f572f626253678c9", h)

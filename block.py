@@ -17,4 +17,4 @@ class Block:
 
   @classmethod
   def hash (cls, data):
-    return hashlib.sha256 (data).hexdigest ()
+    return hashlib.sha256 (data.encode ('utf-8')).hexdigest ()
