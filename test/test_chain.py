@@ -46,10 +46,10 @@ class Chain_Tests ():
 
 class SignedChain_Tests ():
   def setUp (self):
-    self.chain = SignedChain (SignedChain.genesis, Chain.hash, "0xD3AD")
+    self.chain = SignedChain (SignedChain.genesis, Chain.hash, "D3AD")
 
   def test_nonce_array_exists (self):
-    assert_true (instanceof (self.chain, SignedChain))
+    assert_true (isinstance (self.chain, SignedChain))
     assert_true (len (self.chain.nonce), 1)
 
   def test_get_item (self):

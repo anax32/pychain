@@ -71,22 +71,24 @@ class SignedChain(Chain):
   def signed_hash (block_def, sign):
     hash = sign[::-1] + ("0" * (64 - len (sign)))
 
-    if "nonce" in block_def == False:
+    try:
+      block_def["nonce"]
+    except:
       block_def.update ({"nonce": 0})
 
-    while hash.startswith (sign) == False:
+    while hash.startswith (sign.lower ()) == False:
       block_def["nonce"] += 1
       hash = Chain.hash (block_def)
 
     return hash
 
-
   def __init__ (self, genesis_function, hash_function, sign):
     self.nonce = []
-    l_hash_fn = lambda x : SignedChain.signed_hash (x, sign)
+    self.sign = sign.lower ()
+    l_hash_fn = lambda x : SignedChain.signed_hash (x, self.sign)
     Chain.__init__ (self, genesis_function, l_hash_fn)
 
   def __getitem__ (self, i):
     b = Chain.__getitem__ (self, i)
-    b.update ({"nonce":self.nice[i]})
+    b.update ({"nonce" : self.nonce[i]})
     return b
