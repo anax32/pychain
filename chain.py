@@ -3,12 +3,13 @@ import hashlib
 
 class Chain:
   @staticmethod
-  def genesis (chain, hash_function):
-    """creates an initial entry in the block chain"""
-    chain.data.append ("GENESIS BLOCK")
-    chain.time.append (time.time ())
-    chain.chsh.append (hash_function ({"data":chain.data[-1], "timestamp":chain.time[-1]}))
-    chain.phsh.append (0)
+  def genesis ():
+    """creates an initial entry for the block chain"""
+    b = {"data" : "GENESIS BLOCK",
+         "time" : time.time (),
+         "prev" : 0}
+    b.update ({"hash" : Chain.hash (b)})
+    return b
 
   @staticmethod
   def hash (block_def):
@@ -23,7 +24,7 @@ class Chain:
 
     return h.hexdigest ()
 
-  def __init__ (self, genesis_function, hash_function):
+  def __init__ (self, genesis_function):
     """creates empty lists for the data, timestampes,
     hash and previous hash.
     Previous hash is stored to avoid recomputing the hash of
@@ -33,20 +34,26 @@ class Chain:
     self.chsh = []  # hash of block
     self.phsh = []  # hash of prev block
 
-    self.hash_fn = hash_function  # hash function
-    genesis_function (self, hash_function) # init the chain with a gensis block
+    # get a genesis block
+    self.__setitem__ (0, genesis_function ())
 
   def __len__ (self):
     """returns the number of blocks in the chain"""
     return len (self.chsh)
 
-  def append (self, data):
-    """appends a block of data to the chain.
+  def make (self, data, previous_hash):
+    """creates a block out of thin air
     FIXME: do not use time directly as the timestamp, but give a relative
     offset to the previous block age"""
-    self.data.append (data)
-    self.time.append (time.time ())
-    self.chsh.append (self.hash_fn ({"data": self.data[-1], "timestamp": self.time[-1], "hash": self.chsh[-1]}))
+    b = {"data" : data,
+         "time" : time.time (),
+         "prev" : previous_hash}
+    b.update ({"hash" : Chain.hash (b)})
+    return b
+    
+  def append (self, data):
+    """appends a block of data to the chain."""
+    self.__setitem__ (len (self), self.make (data, self.chsh[-1]))
 
   def is_valid (self):
     """checks hashes and previous hashes match for each block in the chain"""
@@ -62,3 +69,11 @@ class Chain:
             "hash" : self.chsh[i],
             "prev" : self.phsh[i]}
 
+  def __setitem__ (self, i, value):
+    if i >= len (self):
+      self.data.append (value["data"])
+      self.time.append (value["time"])
+      self.chsh.append (value["hash"])
+      self.phsh.append (value["prev"])
+    else:
+      raise
