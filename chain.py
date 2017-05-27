@@ -14,10 +14,11 @@ class Chain:
   def hash (block_def):
     """computes the hash of block_def.
     Each item in block_def is converted to bytes.
-    block_def is a dictionary"""
+    block_def is a dictionary.
+    keys are sorted before hashing, order is ascending key value"""
     h = hashlib.sha256 ()
 
-    for i in block_def.keys ():
+    for i in sorted (block_def.keys ()):
       h.update (bytes (block_def[i]))
 
     return h.hexdigest ()
@@ -61,34 +62,3 @@ class Chain:
             "hash" : self.chsh[i],
             "prev" : self.phsh[i]}
 
-class SignedChain(Chain):
-  @staticmethod
-  def genesis (chain, hash_function):
-    chain.nonce.append (0)
-    Chain.genesis (chain, hash_function)
-
-  @staticmethod
-  def signed_hash (block_def, sign):
-    hash = sign[::-1] + ("0" * (64 - len (sign)))
-
-    try:
-      block_def["nonce"]
-    except:
-      block_def.update ({"nonce": 0})
-
-    while hash.startswith (sign.lower ()) == False:
-      block_def["nonce"] += 1
-      hash = Chain.hash (block_def)
-
-    return hash
-
-  def __init__ (self, genesis_function, hash_function, sign):
-    self.nonce = []
-    self.sign = sign.lower ()
-    l_hash_fn = lambda x : SignedChain.signed_hash (x, self.sign)
-    Chain.__init__ (self, genesis_function, l_hash_fn)
-
-  def __getitem__ (self, i):
-    b = Chain.__getitem__ (self, i)
-    b.update ({"nonce" : self.nonce[i]})
-    return b

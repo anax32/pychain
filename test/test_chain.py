@@ -1,16 +1,29 @@
 import nose
 from nose.tools import *
 
-from chain import Chain, SignedChain
-from block import Block
+from chain import Chain
+
+class Chain_Hash_Tests ():
+  def test_hash_function (self):
+    T = {"A":"A", "B":"B", "C":"C", "D":"D"}
+    h = Chain.hash (T)
+    assert_equals ("e12e115acf4552b2568b55e93cbd39394c4ef81c82447fafc997882a02d23677", h)
+
+class Chain_Gensis_Block_Tests():
+  def setUp (self):
+    self.data = []
+    self.time = []
+    self.chsh = []
+    self.phsh = []
+
+  def test_genesis_function (self):
+    Chain.genesis (self, Chain.hash)
+    assert_equals (1, len (self.data))
+    assert_equals ("GENESIS BLOCK", self.data[0])
 
 class Chain_Tests ():
   def setUp (self):
     self.chain = Chain (Chain.genesis, Chain.hash)
-
-  def test_genesis_function (self):
-    L = [[], [], []]
-
 
   def test_starts_with_one_block (self):
     assert_equals (1, len (self.chain))
@@ -42,21 +55,3 @@ class Chain_Tests ():
     assert_true ("time" in b.keys ())
     assert_true ("hash" in b.keys ())
     assert_true ("prev" in b.keys ())
-
-
-class SignedChain_Tests ():
-  def setUp (self):
-    self.chain = SignedChain (SignedChain.genesis, Chain.hash, "D3AD")
-
-  def test_nonce_array_exists (self):
-    assert_true (isinstance (self.chain, SignedChain))
-    assert_true (len (self.chain.nonce), 1)
-
-  def test_get_item (self):
-    b = self.chain[0]
-    assert_equals (5, len (b))
-    assert_true ("data" in b.keys ())
-    assert_true ("time" in b.keys ())
-    assert_true ("hash" in b.keys ())
-    assert_true ("prev" in b.keys ())
-    assert_true ("nonce" in b.keys ())
