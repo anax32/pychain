@@ -8,8 +8,4 @@ setup (name = "pychain",
        author_email = "anax@hotmail.co.uk",
        license = "MIT",
        packages = ["pychain"],
-       install_requires = [
-         "time",
-         "hashlib"
-       ],
        zip_safe = True)
