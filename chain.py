@@ -1,52 +1,92 @@
-from block import Block
-
 import time
+import hashlib
 
 class Chain:
-  def create_block (self, data):
-    lb = self.get_last_block ()
-    return Block (lb.index+1, lb.hash, time.time (), data)
+  @staticmethod
+  def genesis (chain, hash_function):
+    """creates an initial entry in the block chain"""
+    chain.data.append ("GENESIS BLOCK")
+    chain.time.append (time.time ())
+    chain.chsh.append (hash_function ({"data":chain.data[-1], "timestamp":chain.time[-1]}))
+    chain.phsh.append (0)
 
-  def __init__ (self, genesis_function):
-    # genesis
-    self.chain = []
-    self.chain.append (genesis_function ())
+  @staticmethod
+  def hash (block_def):
+    """computes the hash of block_def.
+    Each item in block_def is converted to bytes.
+    block_def is a dictionary"""
+    h = hashlib.sha256 ()
 
-  def get_last_block (self):
-    return self.chain[len (self.chain)-1]
+    for i in block_def.keys ():
+      h.update (bytes (block_def[i]))
 
-  def is_valid_next_block (self, new_block, prev_block):
-    if prev_block.index + 1 != new_block.index:
-      return False
-    if prev_block.hash != new_block.previousHash:
-      return False
-    if Block.hash (str (new_block)) != new_block.hash:
-      return False
+    return h.hexdigest ()
 
-    return True
+  def __init__ (self, genesis_function, hash_function):
+    """creates empty lists for the data, timestampes,
+    hash and previous hash.
+    Previous hash is stored to avoid recomputing the hash of
+    a block to confirm hashs are correct"""
+    self.data = []  # data in block
+    self.time = []  # time stamp of block
+    self.chsh = []  # hash of block
+    self.phsh = []  # hash of prev block
 
-  def add_block (self, new_block):
-    if self.is_valid_next_block (new_block, self.get_last_block ()) == False:
-      return False
+    self.hash_fn = hash_function  # hash function
+    genesis_function (self, hash_function) # init the chain with a gensis block
 
-    self.chain.append (new_block)
-    return True
+  def __len__ (self):
+    """returns the number of blocks in the chain"""
+    return len (self.chsh)
 
-  def is_valid_chain (self):
-    head = self.chain[0]
+  def append (self, data):
+    """appends a block of data to the chain.
+    FIXME: do not use time directly as the timestamp, but give a relative
+    offset to the previous block age"""
+    self.data.append (data)
+    self.time.append (time.time ())
+    self.chsh.append (self.hash_fn ({"data": self.data[-1], "timestamp": self.time[-1], "hash": self.chsh[-1]}))
 
-    for i in range (1, len (self.chain)):
-      if self.is_valid_next_block (self.chain[i], self.chain[i-1]) == False:
+  def is_valid (self):
+    """checks hashes and previous hashes match for each block in the chain"""
+    for h, p in zip (self.phsh[1:], self.chsh):
+      if h != p:
+        print (str (h) + " != " + str (p))
         return False
-
     return True
 
-  def replace_chain (self, other):
-    if other.is_valid_chain () == False:
-      return False
+  def __getitem__ (self, i):
+    return {"data" : self.data[i],
+            "time" : self.time[i],
+            "hash" : self.chsh[i],
+            "prev" : self.phsh[i]}
 
-    if len (other.chain) <= len (self.chain):
-      return False
+class SignedChain(Chain):
+  @staticmethod
+  def genesis (chain, hash_function):
+    chain.nonce.append (0)
+    Chain.genesis (chain, hash_function)
 
-    self.chain = other.chain
-    return True
+  @staticmethod
+  def signed_hash (block_def, sign):
+    hash = sign[::-1] + ("0" * (64 - len (sign)))
+
+    if "nonce" in block_def == False:
+      block_def.update ({"nonce": 0})
+
+    while hash.startswith (sign) == False:
+      block_def["nonce"] += 1
+      hash = Chain.hash (block_def)
+
+    return hash
+
+
+  def __init__ (self, genesis_function, hash_function, sign):
+    self.nonce = []
+    l_hash_fn = lambda x : SignedChain.signed_hash (x, sign)
+    Chain.__init__ (self, genesis_function, l_hash_fn)
+
+  def __getitem__ (self, i):
+    b = Chain.__getitem__ (self, i)
+    b.update ({"nonce":self.nice[i]})
+    return b
