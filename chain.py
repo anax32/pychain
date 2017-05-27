@@ -3,14 +3,14 @@ from block import Block
 import time
 
 class Chain:
-  @classmethod
-  def get_genesis_block (cls):
-    return Block (0, "0", 0, "GENESIS BLOCK")
+  def create_block (self, data):
+    lb = self.get_last_block ()
+    return Block (lb.index+1, lb.hash, time.time (), data)
 
-  def __init__ (self):
+  def __init__ (self, genesis_function):
     # genesis
     self.chain = []
-    self.chain.append (Chain.get_genesis_block ())
+    self.chain.append (genesis_function ())
 
   def get_last_block (self):
     return self.chain[len (self.chain)-1]
@@ -31,10 +31,6 @@ class Chain:
 
     self.chain.append (new_block)
     return True
-
-  def create_block (self, data):
-    lb = self.get_last_block ()
-    return Block (lb.index+1, lb.hash, time.time (), data)
 
   def is_valid_chain (self):
     head = self.chain[0]
