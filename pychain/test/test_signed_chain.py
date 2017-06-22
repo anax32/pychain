@@ -1,8 +1,7 @@
 import nose
 from nose.tools import *
 
-from chain import Chain
-from signed_chain import SignedChain
+from pychain import Chain, SignedChain
 
 class Hash_Tests ():
   def test_hash_function (self):
