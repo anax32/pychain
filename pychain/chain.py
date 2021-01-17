@@ -21,13 +21,13 @@ block(n+1)["prev"] = hash(block(n))
 ```
 """
 
-import time
 import hashlib
 import logging
 
 
 from .genesis_blocks import default_genesis_fn
 from .hashers import SimpleHash
+from .blocks.simple_block_handler import SimpleBlockHandler
 
 
 logger = logging.getLogger(__name__)
@@ -37,18 +37,15 @@ class Chain():
   """
   Chain class creates and manages a blockchain data structure
   in memory
-
-  constructor parameters:
+  """
+  def __init__ (self, genesis_fn = None, hash_fn = None, block_fn = None):
+    """
     genesis_fn: the function which creates the genesis block
     hash_fn: function to compute the block hash (any hashlib function will work)
+    block_fn: object providing interface to block creation and serialisation
 
-  """
-  def __init__ (self, genesis_fn = None, hash_fn = None):
-    """
-    creates empty lists for the data, timestamps,
-    hash and previous hash.
-    Previous hash is stored to avoid recomputing the hash of
-    a block to confirm hashs are correct
+    TODO: change this to block_create_fn, block_read_fn etc, so we can disable
+          creation/serialisation optionally?
     """
     self.blocks = []
 
@@ -61,6 +58,11 @@ class Chain():
       self.hash_fn = SimpleHash(ignore_keys=["hash"])
     else:
       self.hash_fn = hash_fn
+
+    if block_fn is None:
+      self.block_fn = SimpleBlockHandler()
+    else:
+      self.block_fn = block_fn
 
     # get a genesis block
     g = self.genesis_fn()
@@ -79,11 +81,8 @@ class Chain():
     """
     create a block containing data and append to the chain
     """
-    block = {
-      "data": data,
-      "time": time.time(),
-      "prev": self.blocks[-1]["hash"]
-    }
+    block = self.block_fn.create(data)
+    block["prev"] = self.blocks[-1]["hash"]
     block["hash"] = self.hash_fn(block)
     self.blocks.append(block)
 
@@ -92,7 +91,7 @@ class Chain():
     """
     validate all the blocks in a chain object
     """
-    p_hash = self.hash_fn(self.genesis_fn())
+    p_hash = self.hash_fn(self.blocks[0])
 
     for idx, block in enumerate(self.blocks[1:]):
       b_hash = self.hash_fn(block)
@@ -108,3 +107,5 @@ class Chain():
         raise Exception()
 
       p_hash = b_hash
+
+    return True
