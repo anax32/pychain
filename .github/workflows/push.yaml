@@ -93,6 +93,11 @@ jobs:
         name: pychain-package
         path: .
 
+    - id: echo
+      run: |
+        pwd
+        ls -R .
+
     - name: set up python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
