@@ -1,11 +1,25 @@
-from setuptools import setup
+import setuptools
 
-setup (name = "pychain",
-       version = "0.1",
-       description = "simple blockchain implementation",
-       url = "http://github.com/anax32/pychain",
-       author = "anax32",
-       author_email = "anax@hotmail.co.uk",
-       license = "MIT",
-       packages = ["pychain"],
-       zip_safe = True)
+with open("README.md", "r") as f:
+    long_description = f.read()
+
+exec(open("pychain/version.py").read())
+
+setuptools.setup (
+    name = "pychain",
+    version = __version__,
+    author = "anax32",
+    author_email = "anax@hotmail.co.uk",
+    description = "simple blockchain implementation",
+    url = "http://github.com/anax32/pychain",
+    packages = [
+        "pychain",
+        "pychain.hash",
+        "pychain.block"
+    ],
+    classifiers=[
+        "Operating System :: OS Independent"
+    ],
+    license = "MIT",
+    zip_safe = True
+)
