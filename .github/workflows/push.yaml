@@ -72,7 +72,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: pychain-package
-        path: package/pychain.whl
+        path: pychain.whl
 
   test:
     name: test python packages
