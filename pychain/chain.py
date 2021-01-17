@@ -26,7 +26,7 @@ import logging
 
 
 from .genesis_blocks import default_genesis_fn
-from .hashers import SimpleHash
+from .hash import SimpleHash
 from .blocks.simple_block_handler import SimpleBlockHandler
 
 

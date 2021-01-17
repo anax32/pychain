@@ -1,6 +1,4 @@
-__all__ = ["Chain", "SimpleHash", "PrefixHash"]
+__all__ = ["Chain"]
 
 from .chain import Chain
 from .blocks.simple_block_handler import SimpleBlockHandler
-
-from .hashers import SimpleHash, PrefixHash

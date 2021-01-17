@@ -7,27 +7,6 @@ import logging
 import struct
 
 
-logger = logging.getLogger(__name__)
-
-
-def type_to_bytearray(x):
-  """
-  convert any type into a byte array for block storage
-  """
-  cnvs = {
-    bytes: lambda x: x,
-    bytearray: lambda x: x,
-    int: lambda x: bytearray(struct.pack("!i", x)),
-    float: lambda x: bytearray(struct.pack("!f", x)),
-    str: lambda x: x.encode(),
-  }
-
-  try:
-    return cnvs[type(x)](x)
-  except KeyError:
-    logger.error("cannot convert type: '%s'[%s]" % (str(type(x)), str(x)))
-
-
 class SimpleHash():
   """
   computes the hash of an in-memory dictionary object.
@@ -73,26 +52,3 @@ class SimpleHash():
         logger.error("could not hash: '%s': [%s]'%s'" % (key, str(type(D[key])), str(D[key])))
 
     return h.hexdigest()
-
-
-class PrefixHash(SimpleHash):
-  """
-  computes the hash of a dictionary which starts with a given sequence
-  """
-  def __init__(self, hash_fn = None, ignore_keys = None, prefix = None):
-    super().__init__(hash_fn, ignore_keys)
-
-    self.prefix = "" if prefix is None else prefix
-
-  def __call__(self, D):
-    D["nonce"] = 0
-
-    while True:
-      c = super().__call__(D)
-
-      if c[:len(self.prefix)] == self.prefix:
-        break
-
-      D["nonce"] += 1
-
-    return c
