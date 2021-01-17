@@ -4,6 +4,7 @@ import subprocess
 with open("README.md", "r") as f:
     long_description = f.read()
 
+
 def get_git_version():
     """
     get pep440 compatible version string from tag/commit
@@ -46,7 +47,6 @@ setuptools.setup(
     classifiers=["Operating System :: OS Independent"],
     license="MIT",
     zip_safe=True,
-
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     test_suite="pychain.test",
