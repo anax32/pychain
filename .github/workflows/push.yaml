@@ -67,12 +67,12 @@ jobs:
     - name: build wheel
       run: |
         python -m pip install wheel --upgrade
-        python setup.py -q bdist_wheel -d pkg/pychain.whl
+        python setup.py -q bdist_wheel -d pychain.whl
 
     - uses: actions/upload-artifact@v2
       with:
         name: pychain-package
-        path: pkg/pychain.whl
+        path: pychain.whl
 
   test:
     name: test python packages
@@ -91,7 +91,7 @@ jobs:
       id: download-package
       with:
         name: pychain-package
-        path: pkg/pychain.whl
+        path: .
 
     - name: set up python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -101,7 +101,7 @@ jobs:
     - name: "test-package-install on ${{ matrix.python-version }}"
       run: |
         set -xe
-        pip install pkg/pychain.whl && \
+        pip install pychain.whl && \
         python -c "import pychain" && \
         python -c "import pychain.hash" && \
         python -c "import pychain.block"
