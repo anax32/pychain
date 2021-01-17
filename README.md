@@ -2,14 +2,6 @@
 
 Basic implementation of a blockchain
 
-+ Chain  
-  - hashes data including the hash of previous blocks. 
-  - Chain is not a proof-of-work system
-
-+ SignedChain  
-  - all block hashes must begin with a given signature; 
-  - SignedChain is a proof-of-work blockchain system
-
 ## Usage
 
 Compute a blockchain of a few meaningless strings:
