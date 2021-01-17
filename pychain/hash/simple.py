@@ -6,6 +6,7 @@ import hashlib
 import logging
 import struct
 
+from .type_convert import type_to_bytearray
 
 class SimpleHash():
   """

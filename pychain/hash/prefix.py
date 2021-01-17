@@ -5,14 +5,14 @@ This object will add a "nonce" key-value pair to the dictionary.
 This key-value pair is required to recreate the hash value of the
 dictionary providing no other values change.
 """
-from .simple_hash import SimpleHash
+from .simple import SimpleHash
 
 
 class PrefixHash(SimpleHash):
   """
   computes the hash of a dictionary which starts with a given sequence
   """
-  def __init__(self, **args, prefix = None, **kwargs):
+  def __init__(self, *args, prefix = None, **kwargs):
     super().__init__(*args, **kwargs)
 
     self.prefix = "" if prefix is None else prefix
