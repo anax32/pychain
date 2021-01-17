@@ -93,11 +93,6 @@ jobs:
         name: pychain-package
         path: .
 
-    - id: echo
-      run: |
-        pwd
-        ls -R .
-
     - name: set up python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -106,7 +101,7 @@ jobs:
     - name: "test-package-install on ${{ matrix.python-version }}"
       run: |
         set -xe
-        pip install pychain.whl && \
+        pip install pychain*.whl && \
         python -c "import pychain" && \
         python -c "import pychain.hash" && \
         python -c "import pychain.block"
