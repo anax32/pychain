@@ -1,4 +1,5 @@
-__all__ = ["Chain", "SignedChain"]
+__all__ = ["Chain", "SimpleHash", "PrefixHash"]
 
-from chain import Chain
-from signed_chain import SignedChain
+from .chain import Chain
+
+from .hashers import SimpleHash, PrefixHash

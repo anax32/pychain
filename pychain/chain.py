@@ -1,79 +1,110 @@
+"""
+Basic blockchain data-structure
+
+A block is a dictionary object:
+```
+{
+  "data": <some byte sequence>,
+  "time": <timestamp>,
+  "prev": <previous block hash>
+}
+```
+
+a blockchain is a sequence of blocks such that
+the hash value of the previous block is used in
+the definition of the current block hash,
+
+in pseudocode:
+
+```
+block(n+1)["prev"] = hash(block(n))
+```
+"""
+
 import time
 import hashlib
+import logging
 
-class Chain:
-  @staticmethod
-  def genesis ():
-    """creates an initial entry for the block chain"""
-    b = {"data" : "GENESIS BLOCK",
-         "time" : time.time (),
-         "prev" : 0}
-    b.update ({"hash" : Chain.hash (b)})
-    return b
 
-  @staticmethod
-  def hash (block_def):
-    """computes the hash of block_def.
-    Each item in block_def is converted to bytes.
-    block_def is a dictionary.
-    keys are sorted before hashing, order is ascending key value"""
-    h = hashlib.sha256 ()
+from .genesis_blocks import default_genesis_fn
+from .hashers import SimpleHash
 
-    for i in sorted (block_def.keys ()):
-      h.update (bytes (block_def[i]))
 
-    return h.hexdigest ()
+logger = logging.getLogger(__name__)
 
-  def __init__ (self, genesis_function):
-    """creates empty lists for the data, timestampes,
+
+class Chain():
+  """
+  Chain class creates and manages a blockchain data structure
+  in memory
+
+  constructor parameters:
+    genesis_fn: the function which creates the genesis block
+    hash_fn: function to compute the block hash (any hashlib function will work)
+
+  """
+  def __init__ (self, genesis_fn = None, hash_fn = None):
+    """
+    creates empty lists for the data, timestamps,
     hash and previous hash.
     Previous hash is stored to avoid recomputing the hash of
-    a block to confirm hashs are correct"""
-    self.data = []  # data in block
-    self.time = []  # time stamp of block
-    self.chsh = []  # hash of block
-    self.phsh = []  # hash of prev block
+    a block to confirm hashs are correct
+    """
+    self.blocks = []
+
+    if genesis_fn is None:
+      self.genesis_fn = default_genesis_fn if genesis_fn is None else genesis_fn
+    else:
+      self.genesis_fn = genesis_fn
+
+    if hash_fn is None:
+      self.hash_fn = SimpleHash(ignore_keys=["hash"])
+    else:
+      self.hash_fn = hash_fn
 
     # get a genesis block
-    self.__setitem__ (0, genesis_function ())
+    g = self.genesis_fn()
+    g["hash"] = self.hash_fn(g)
+    self.blocks.append(g)
+
 
   def __len__ (self):
-    """returns the number of blocks in the chain"""
-    return len (self.chsh)
+    """
+    return length of the chain
+    """
+    return len(self.blocks)
 
-  def make (self, data, previous_hash):
-    """creates a block out of thin air
-    FIXME: do not use time directly as the timestamp, but give a relative
-    offset to the previous block age"""
-    b = {"data" : data,
-         "time" : time.time (),
-         "prev" : previous_hash}
-    b.update ({"hash" : Chain.hash (b)})
-    return b
-    
-  def append (self, data):
-    """appends a block of data to the chain."""
-    self.__setitem__ (len (self), self.make (data, self.chsh[-1]))
 
-  def is_valid (self):
-    """checks hashes and previous hashes match for each block in the chain"""
-    for h, p in zip (self.phsh[1:], self.chsh):
-      if h != p:
-        print (str (h) + " != " + str (p))
-        return False
-    return True
+  def append(self, data):
+    """
+    create a block containing data and append to the chain
+    """
+    block = {
+      "data": data,
+      "time": time.time(),
+      "prev": self.blocks[-1]["hash"]
+    }
+    block["hash"] = self.hash_fn(block)
+    self.blocks.append(block)
 
-  def __getitem__ (self, i):
-    return {"data" : self.data[i],
-            "time" : self.time[i],
-            "hash" : self.chsh[i],
-            "prev" : self.phsh[i]}
 
-  def __setitem__ (self, i, value):
-    if i >= len (self):
-      self.data.append (value["data"])
-      self.time.append (value["time"])
-      self.chsh.append (value["hash"])
-      self.phsh.append (value["prev"])
-    else:
-      raise
+  def validate(self):
+    """
+    validate all the blocks in a chain object
+    """
+    p_hash = self.hash_fn(self.genesis_fn())
+
+    for idx, block in enumerate(self.blocks[1:]):
+      b_hash = self.hash_fn(block)
+
+      logger.info("block[%i]: [%s] %s" % (idx, block["prev"], block["hash"]))
+
+      if block["prev"] != p_hash:
+        logger.error("block.prev != hash (%s != %s)" % (str(block["prev"]), str(p_hash)))
+        raise Exception()
+
+      if block["hash"] != b_hash:
+        logger.error("block.hash != hash (%s != %s)" % (str(block["hash"]), str(b_hash)))
+        raise Exception()
+
+      p_hash = b_hash
