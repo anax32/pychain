@@ -67,12 +67,12 @@ jobs:
     - name: build wheel
       run: |
         python -m pip install setuptools wheel --upgrade pip
-        cd package/
+        cd pychain/
         python setup.py -q bdist_wheel -d pychain.whl
 
     - uses: actions/upload-artifact@v2
       with:
-        name: runfox-package
+        name: pychain-package
         path: package/pychain.whl
 
   test:
