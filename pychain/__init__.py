@@ -1,5 +1,3 @@
-__all__ = ["Chain", "SimpleHash", "PrefixHash"]
+__all__ = ["Chain"]
 
 from .chain import Chain
-
-from .hashers import SimpleHash, PrefixHash
